@@ -54,3 +54,55 @@ curl -X POST http://localhost:3000/user/register \
 **Notes**
 - The password is hashed before storage; the returned `user` object does not include the password field.
 - Validation rules are defined in the route for `POST /user/register`.
+
+## User Login Endpoint
+
+**Endpoint**
+- **URL**: `POST /users/login`
+- **Description**: Authenticates a user using email and password. On success returns a JWT token and the user object (password omitted).
+
+**Request**
+- **Content-Type**: `application/json`
+- **Body fields**:
+  - `email` (string, required) — must be a valid email
+  - `password` (string, required) — minimum 6 characters
+
+Example request body:
+
+```json
+{
+  "email": "jane.doe@example.com",
+  "password": "securePass123"
+}
+```
+
+Example curl:
+
+```bash
+curl -X POST http://localhost:4000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"jane.doe@example.com","password":"securePass123"}'
+```
+
+**Responses / Status Codes**
+- **200 OK**: Login successful. Response body example:
+
+```json
+{
+  "token": "<jwt-token>",
+  "user": {
+    "_id": "<user-id>",
+    "fullname": { "firstname": "Jane", "lastname": "Doe" },
+    "email": "jane.doe@example.com",
+    "socketId": null
+  }
+}
+```
+
+- **400 Bad Request**: Validation failed (missing/invalid fields).
+- **401 Unauthorized**: Invalid email or password.
+- **500 Internal Server Error**: Unexpected server error.
+
+**Notes**
+- The endpoint expects a `POST` request with JSON body. A `GET /users/login` is not supported for authentication.
+- The server sets a `token` cookie on successful login in addition to returning the token in the response body.
