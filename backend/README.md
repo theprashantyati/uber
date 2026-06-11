@@ -106,3 +106,60 @@ curl -X POST http://localhost:4000/users/login \
 **Notes**
 - The endpoint expects a `POST` request with JSON body. A `GET /users/login` is not supported for authentication.
 - The server sets a `token` cookie on successful login in addition to returning the token in the response body.
+
+## User Profile Endpoint
+
+**Endpoint**
+- **URL**: `GET /users/profile`
+- **Description**: Returns the authenticated user's profile. This route is protected and requires a valid JWT token (cookie or `Authorization` header).
+
+**Request**
+- Provide the token either in the `Authorization` header as `Bearer <token>` or as the `token` cookie sent by the server on login.
+
+Example curl:
+
+```bash
+curl -X GET http://localhost:4000/users/profile \
+  -H "Authorization: Bearer <jwt-token>"
+```
+
+**Responses / Status Codes**
+- **200 OK**: Returns the user's profile (example below).
+- **401 Unauthorized**: No token provided, token invalid, or token blacklisted.
+- **500 Internal Server Error**: Unexpected server error.
+
+Example success body:
+
+```json
+{
+  "_id": "<user-id>",
+  "fullname": { "firstname": "Jane", "lastname": "Doe" },
+  "email": "jane.doe@example.com",
+  "socketId": null
+}
+```
+
+## User Logout Endpoint
+
+**Endpoint**
+- **URL**: `GET /users/logout`
+- **Description**: Logs out the authenticated user by clearing the `token` cookie and blacklisting the token so it cannot be reused.
+
+**Request**
+- Provide the token either in the `Authorization` header as `Bearer <token>` or as the `token` cookie.
+
+Example curl:
+
+```bash
+curl -X GET http://localhost:4000/users/logout \
+  -H "Authorization: Bearer <jwt-token>"
+```
+
+**Responses / Status Codes**
+- **200 OK**: `{ "message": "Logged out" }` when logout succeeds.
+- **401 Unauthorized**: No token provided, token invalid, or token already blacklisted.
+- **500 Internal Server Error**: Unexpected server error.
+
+**Notes**
+- After logout the token is added to a blacklist; further requests with that token will be rejected.
+- These routes use the `authMiddleware.authUser` middleware to validate tokens.
